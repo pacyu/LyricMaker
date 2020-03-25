@@ -1,0 +1,255 @@
+﻿<Page
+    x:Class="LyricMaker.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:local="using:LyricMaker"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <Page.Background>
+        <ImageBrush ImageSource="/Assets/66952181.png" Stretch="UniformToFill"/>
+    </Page.Background>
+
+    <Grid x:Name="grid">
+
+        <NavigationView x:Name="navView"
+                        PaneDisplayMode="Left"
+                        ItemInvoked="NavViewInvoked"
+                        IsBackEnabled="False"
+                        IsBackButtonVisible="Collapsed"
+                        CompactModeThresholdWidth="300"
+                        Opacity="0.8">
+            <NavigationView.PaneHeader>
+                <Button x:Name="forwardButton" Background="Transparent" IsEnabled="False" Visibility="Collapsed" Click="Button_Click">
+                    <SymbolIcon Symbol="Forward"/>
+                </Button>
+            </NavigationView.PaneHeader>
+            <NavigationView.MenuItems>
+                <NavigationViewItem Tag="Home" Icon="Audio" Content="我的音乐"/>
+                <NavigationViewItem Tag="Maker" Icon="Edit" Content="歌词制作"/>
+                <NavigationViewItemSeparator/>
+                <NavigationViewItemHeader x:Name="mainPagesHeader">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="音乐列表"/>
+                        <Button>
+                            <SymbolIcon Symbol="List"/>
+                        </Button>
+                    </StackPanel>
+                </NavigationViewItemHeader>
+            </NavigationView.MenuItems>
+
+            <SplitView x:Name="splitView" IsPaneOpen="False" DisplayMode="Inline" PanePlacement="Right">
+                <SplitView.Pane>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Grid x:Name="makeLyric" Grid.Row="0" Tag="makeLyric" Height="330" BorderBrush="Black" BorderThickness="1" AllowDrop="True" VerticalAlignment="Center" DragEnter="MakeLyric_DragEnter" DragOver="MakeLyric_DragOver">
+                            <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <SymbolIcon Symbol="Add"/>
+                                <TextBlock Text="音乐拖至此处以手动制作字幕"/>
+                            </StackPanel>
+                        </Grid>
+                        <Grid x:Name="generateTimeNode" Grid.Row="1" Tag="generateTimeNode" Height="330" BorderBrush="Black" BorderThickness="1" AllowDrop="True" VerticalAlignment="Center" DragEnter="MakeLyric_DragEnter">
+                            <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <SymbolIcon Symbol="Add"/>
+                                <TextBlock Text="音乐拖至此处以自动制作字幕"/>
+                            </StackPanel>
+                        </Grid>
+                        <Grid x:Name="lyricGenerator" Grid.Row="2" Tag="lyricGenerator" Height="330" BorderBrush="Black" BorderThickness="1" AllowDrop="True" VerticalAlignment="Center" DragEnter="MakeLyric_DragEnter">
+                            <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <SymbolIcon Symbol="Add"/>
+                                <TextBlock Text="音乐拖至此处以自动生成字幕"/>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </SplitView.Pane>
+                <SplitView.Content>
+                    <StackPanel>
+                        <TextBlock x:Name="searchResultMsg" Text="" FontSize="20" Width="300" Height="45" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <SearchBox x:Uid="searchBox" x:Name="searchBox" PlaceholderText="搜索" BorderThickness="1" QueryChanged="SearchBox_QueryChanged" QuerySubmitted="SearchBox_QuerySubmitted"></SearchBox>
+                        <StackPanel>
+                            <controls:DataGrid
+                                x:Name="playList"
+                                MinHeight="350"
+                                Height="800"
+                                AutoGenerateColumns="False"
+                                ItemsSource="{x:Bind graphGlobal.Playlist}"
+                                AlternatingRowBackground="#4CD3D3D3"
+                                HeadersVisibility="All"
+                                CanUserReorderColumns="False"
+                                CanUserResizeColumns="True"
+                                CanUserSortColumns="True"
+                                DoubleTapped="DoubleTappedRowToPlay"
+                                CanDrag="True"
+                                ContextFlyout="{x:Bind dataGridRowFlyout}"
+                                FlyoutBase.AttachedFlyout="{x:Bind dataGridRowFlyout}"
+                                DragStarting="PlayList_DragStarting" Tapped="PlayList_Tapped">
+                                <!--<controls:DataGrid.Resources>
+                                    
+                                </controls:DataGrid.Resources>-->
+                                <controls:DataGrid.RowStyle>
+                                    <Style TargetType="controls:DataGridRow">
+                                        <Setter Property="controls:DataGridRow.ContextFlyout">
+                                            <Setter.Value>
+                                                <CommandBarFlyout x:Name="dataGridRowFlyout">
+                                                    <CommandBarFlyout.SecondaryCommands>
+                                                        <AppBarButton Label="播放" Click="CommandBarClick" ToolTipService.ToolTip="播放"/>
+                                                        <AppBarButton Label="复制" Click="CommandBarClick" ToolTipService.ToolTip="复制"/>
+                                                        <AppBarButton Label="编辑" Click="CommandBarClick" ToolTipService.ToolTip="编辑"/>
+                                                    </CommandBarFlyout.SecondaryCommands>
+                                                </CommandBarFlyout>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </controls:DataGrid.RowStyle>
+                                <controls:DataGrid.Columns>
+                                    <controls:DataGridTemplateColumn Header="#" CanUserResize="False">
+                                        <controls:DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate x:DataType="local:Song">
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" ToolTipService.ToolTip="{x:Bind songTitle}" Margin="6">
+                                                    <TextBlock Padding="5,0,5,0" Text="{x:Bind trackNumber}"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </controls:DataGridTemplateColumn.CellTemplate>
+                                    </controls:DataGridTemplateColumn>
+                                    <controls:DataGridTemplateColumn Header="标题 / 艺术家" MinWidth="250" MaxWidth="350">
+                                        <controls:DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate x:DataType="local:Song">
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" ToolTipService.ToolTip="{x:Bind songTitle}" Margin="6">
+                                                    <StackPanel Orientation="Vertical">
+                                                        <TextBlock Padding="5,0,5,0" Text="{x:Bind songTitle}" FontWeight="Bold"/>
+                                                        <TextBlock Padding="5,0,5,0" Text="{x:Bind artistName}"/>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </controls:DataGridTemplateColumn.CellTemplate>
+                                    </controls:DataGridTemplateColumn>
+                                    <controls:DataGridTemplateColumn Header="专辑" MinWidth="250" MaxWidth="350">
+                                        <controls:DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate x:DataType="local:Song">
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" ToolTipService.ToolTip="{x:Bind albumTitle}" Margin="6">
+                                                    <TextBlock Padding="5,0,5,0" Text="{x:Bind albumTitle}"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </controls:DataGridTemplateColumn.CellTemplate>
+                                    </controls:DataGridTemplateColumn>
+                                    <controls:DataGridTemplateColumn Header="音乐流派" MinWidth="200" CanUserResize="False">
+                                        <controls:DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate x:DataType="local:Song">
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="6">
+                                                    <TextBlock Padding="5,0,5,0" Text="{x:Bind genre}"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </controls:DataGridTemplateColumn.CellTemplate>
+                                    </controls:DataGridTemplateColumn>
+                                    <controls:DataGridTemplateColumn Header="作曲" MinWidth="200" CanUserResize="False">
+                                        <controls:DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate x:DataType="local:Song">
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="6">
+                                                    <TextBlock Padding="5,0,5,0" Text="{x:Bind composers}"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </controls:DataGridTemplateColumn.CellTemplate>
+                                    </controls:DataGridTemplateColumn>
+                                    <controls:DataGridTemplateColumn Header="年份" CanUserResize="False">
+                                        <controls:DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate x:DataType="local:Song">
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="6">
+                                                    <TextBlock Padding="5,0,5,0" Text="{x:Bind year}"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </controls:DataGridTemplateColumn.CellTemplate>
+                                    </controls:DataGridTemplateColumn>
+                                    <controls:DataGridTemplateColumn Header="时长" CanUserResize="False">
+                                        <controls:DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate x:DataType="local:Song">
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="6">
+                                                    <TextBlock Padding="5,0,5,0" Text="{x:Bind duration}"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </controls:DataGridTemplateColumn.CellTemplate>
+                                    </controls:DataGridTemplateColumn>
+                                </controls:DataGrid.Columns>
+                            </controls:DataGrid>
+                        </StackPanel>
+
+                        <StackPanel x:Name="footFrame" Margin="0,12,0,0"  VerticalAlignment="Stretch" HorizontalAlignment="Center" Orientation="Horizontal">
+
+                            <StackPanel x:Name="albumartPanel" Orientation="Horizontal" VerticalAlignment="Center" Tapped="AlbumartPanel_Tapped">
+                                <Rectangle x:Name="albumArtThumb" Width="60" Height="60" Fill="Gray"/>
+                                <StackPanel Orientation="Vertical">
+                                    <TextBlock x:Name="songName" Padding="6" Width="120" Text="无" FontSize="18"></TextBlock>
+                                    <TextBlock x:Name="songArtistAndAlbumName" Padding="6" Text="无"></TextBlock>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock x:Name="durationProgressBlock" Padding="6" Text="00:00"></TextBlock>
+                                    <Slider x:Name="playProgress" AllowDrop="True" Value="0" Width="450" PointerMoved="PlayProgress_PointerMoved"/>
+                                    <TextBlock x:Name="durationBlock" Padding="6" Text="00:00"></TextBlock>
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+
+                                    <AppBarToggleButton x:Name="openCloseCaption" Tag="OpenClosedCaptionPanel" Label="字幕" Icon="ClosedCaption" Click="OpenCloseCaption_Click"/>
+                                    <AppBarButton Tag="prevSong" Label="上一首" Icon="Previous" Click="ChangeMusicStateClick">
+                                        <KeyboardAccelerator Key="Left" Modifiers="Control"/>
+                                    </AppBarButton>
+                                    <Button Click="PlayButtonClick" Background="Transparent">
+                                        <Button.KeyboardAccelerators>
+                                            <KeyboardAccelerator Key="Space" Modifiers="None"/>
+                                        </Button.KeyboardAccelerators>
+                                        <StackPanel>
+                                            <SymbolIcon x:Name="playOrPause" Symbol="Play"/>
+                                            <TextBlock x:Name="playOrPauseText" Text="播放" FontSize="12" Margin="0,4,0,0"/>
+                                        </StackPanel>
+                                    </Button>
+                                    <AppBarButton Tag="nextSong" Label="下一首" Icon="Next" Click="ChangeMusicStateClick">
+                                        <KeyboardAccelerator Key="Right" Modifiers="Control"/>
+                                    </AppBarButton>
+                                    <AppBarButton x:Name="loopStateToggle" Tag="checkLoopMode" Label="列表循环" Icon="RepeatAll" Click="LoopModeClick"/>
+
+                                </StackPanel>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
+                                <Button x:Name="volumeButton" Background="#00000000" Click="VolumeButtonClick">
+                                    <SymbolIcon x:Name="toggleVolumeState" Symbol="Volume"/>
+                                </Button>
+                                <Grid>
+                                    <Slider x:Name="volumeAdjustment" MinWidth="100" Value="70" Maximum="100" ValueChanged="SliderValueChanged"/>
+                                </Grid>
+                            </StackPanel>
+
+                        </StackPanel>
+                    </StackPanel>
+                </SplitView.Content>
+            </SplitView>
+        </NavigationView>
+
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState>
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{x:Bind navView.CompactModeThresholdWidth}"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <!-- Remove the next 3 lines for left-only navigation. -->
+                        <Setter Target="navView.PaneDisplayMode" Value="Auto"/>
+                        <!--<Setter Target="navViewSearchBox.Width" Value="200"/>-->
+                        <!--<Setter Target="mainPagesHeader.Visibility" Value="Collapsed"/>-->
+                        <!-- Leave the next line for left-only navigation. -->
+                        <!--<Setter Target="ContentFrame.Padding" Value="24,0,24,24"/>-->
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+
+    </Grid>
+</Page>
