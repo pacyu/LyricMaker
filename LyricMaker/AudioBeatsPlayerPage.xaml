@@ -33,11 +33,11 @@
                         <Grid x:Name="captionGrid">
                             <Grid.Background>
                                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                                    <GradientStop Color="Red" Offset="0"/>
-                                    <GradientStop Color="OrangeRed" Offset="0.25"/>
-                                    <GradientStop Color="Orange" Offset="0.5"/>
-                                    <GradientStop Color="Yellow" Offset="0.75"/>
-                                    <GradientStop Color="YellowGreen" Offset="1"/>
+                                    <GradientStop Color="#FFC98B8B" Offset="0"/>
+                                    <GradientStop Color="#FFE49172" Offset="0.25"/>
+                                    <GradientStop Color="#FFCDA763" Offset="0.5"/>
+                                    <GradientStop Color="#FFC9C966" Offset="0.75"/>
+                                    <GradientStop Color="#FFCFDEB0" Offset="1"/>
                                 </LinearGradientBrush>
                             </Grid.Background>
                             <GridView x:Name="captionGridView" ItemsSource="{x:Bind lyricList}">
